@@ -35,6 +35,7 @@ struct ConfigurationLoader {
 
         self.fill(data: data, env: .preproduction)
         self.fill(data: data, env: .development)
+        self.fill(data: data, env: .norway)
     }
 
     struct EnvData {
@@ -66,6 +67,13 @@ extension SchibstedAccount.ClientConfiguration {
         clientID: config[.development].clientID,
         clientSecret: config[.development].clientSecret,
         appURLScheme: config[.development].clientScheme
+    )
+
+    static let norway = ClientConfiguration(
+        environment: .norway,
+        clientID: config[.norway].clientID,
+        clientSecret: config[.norway].clientSecret,
+        appURLScheme: config[.norway].clientScheme
     )
 
     // Set this to what the app should use
