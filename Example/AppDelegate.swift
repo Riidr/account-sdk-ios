@@ -192,7 +192,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                         do {
                             // It is important that you pass the same instance of `User` that you previously stored, otherwise you won't get logout
                             // notifications for that user in case the user is logged out for not having accepted the new terms.
-                            try IdentityUI.presentTerms(terms, for: user, from: viewController, configuration: .current)
+                            try IdentityUI.presentTerms(terms, for: user, from: viewController, configuration: .current, completion: {})
                         } catch {
                             preconditionFailure("Attempt to initialize IdentityUI with wrong configuration")
                         }

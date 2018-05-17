@@ -166,7 +166,7 @@ public class IdentityUI {
      - Throws: `IdentityUI.Error.mismatchingClientConfiguration` if the client configuration owned by the given `User` instance is not the same as the one owned
        by the given UI configuration.
      */
-    public static func presentTerms(_ terms: Terms, for user: User, from viewController: UIViewController, configuration: IdentityUIConfiguration) throws {
+    public static func presentTerms(_ terms: Terms, for user: User, from viewController: UIViewController, configuration: IdentityUIConfiguration, completion: @escaping () -> Void) throws {
         guard user.clientConfiguration == configuration.clientConfiguration else {
             throw Error.mismatchingClientConfiguration
         }
@@ -188,7 +188,7 @@ public class IdentityUI {
         self.updatedTermsCoordinator = UpdatedTermsCoordinator(navigationController: navigationController, configuration: configuration)
         self.updatedTermsCoordinator?.start(input: input) { _ in
             self.updatedTermsCoordinator = nil
-            navigationController.dismiss(animated: true, completion: nil)
+            navigationController.dismiss(animated: true, completion: completion)
         }
         configuration.presentationHook?(navigationController)
         viewController.present(navigationController, animated: true, completion: nil)
