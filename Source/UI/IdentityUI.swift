@@ -132,7 +132,11 @@ public class IdentityUI {
     ///
     public let identityManager: IdentityManager
 
-    let navigationController = UINavigationController()
+    lazy var navigationController: UINavigationController = {
+        DismissableNavigationController { [weak self] in
+            self?.complete(with: .cancel)
+        }
+    }()
 
     var child: ChildFlowCoordinator?
 
@@ -182,7 +186,9 @@ public class IdentityUI {
             preconditionFailure("Attempt to present updated terms while another Identity UI flow is already presented.")
         }
 
-        let navigationController = UINavigationController()
+        let navigationController = DismissableNavigationController {
+            self.updatedTermsCoordinator = nil
+        }
         let input = UpdatedTermsCoordinator.Input(currentUser: user, terms: terms)
 
         self.updatedTermsCoordinator = UpdatedTermsCoordinator(navigationController: navigationController, configuration: configuration)
@@ -289,6 +295,11 @@ public class IdentityUI {
     }
 
     private func complete(with output: Output) {
+        guard IdentityUI.presentedIdentityUI != nil else {
+            // IdentityUI has been already dismissed.
+            return
+        }
+
         let uiResult: IdentityUIResult?
         switch output {
         case let .success(user):
@@ -506,7 +517,10 @@ extension IdentityUI {
         let input = AuthenticationCoordinator.Input(identifier: identifier, loginFlowVariant: loginFlowVariant, scopes: scopes)
         self.spawnChild(coordinator, input: input) { [weak self] output in
             switch output {
-            case let .success(user):
+            case let .success(user, persistUser):
+                if persistUser {
+                    user.persistCurrentTokens()
+                }
                 completion(.success(user))
             case .cancel:
                 completion(.cancel)
@@ -649,4 +663,25 @@ extension IdentityUI {
     static let bundle = {
         Bundle(for: IdentityUI.self)
     }()
+}
+
+private final class DismissableNavigationController: UINavigationController {
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+
+        if isBeingDismissed {
+            self.didDismiss()
+        }
+    }
+
+    private let didDismiss: () -> Void
+
+    init(didDismiss: @escaping () -> Void) {
+        self.didDismiss = didDismiss
+        super.init(nibName: nil, bundle: nil)
+    }
+
+    required init?(coder _: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
 }
